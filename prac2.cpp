@@ -10,6 +10,7 @@ typedef char tElto;
 // Ejercicio 1
 bool AbinSimilares(const AbinEnla<tElto>& A, const AbinEnla<tElto>& B);
 bool AbinSimilares_rec(const typename AbinEnla<tElto>::nodo& nA, const AbinEnla<tElto>& A, const typename AbinEnla<tElto>::nodo& nB, const AbinEnla<tElto>& B);
+int numHijosNodo(const typename AbinEnla<tElto>::nodo& n, const AbinEnla<tElto>& A);
 
 // Ejercicio 2
 AbinEnla<tElto> AbinReflejado(const AbinEnla<tElto>& A);
@@ -19,20 +20,20 @@ int main ()
 { 
     AbinEnla<tElto> A, B;
 
-    // Lectura del árbol desde el fichero abin.dat y asignación al nodo n de un nodo cualquiera
-    ifstream fe("abin.dat");
+    // Lectura de los árboles y asignación de un nodo cualquiera
+    ifstream fe("abinA.dat");
     rellenarAbin(fe, A);
     fe.close();
     
-    cout << "\n*** Mostrar árbol binario A ***\n"; 
+    cout << "\n*** Mostrar abinA ***\n"; 
     imprimirAbin(A);
     cout << endl;
     
-    ifstream f2("abin2.dat");
+    ifstream f2("abinB.dat");
     rellenarAbin(f2, B);
     f2.close();
     
-    cout << "\n*** Mostrar árbol binario B ***\n"; 
+    cout << "\n*** Mostrar abinB ***\n"; 
     imprimirAbin(B);
     cout << endl;
     
@@ -52,46 +53,37 @@ int main ()
 
 // EJERCICIO 1
 bool AbinSimilares(const AbinEnla<tElto>& A, const AbinEnla<tElto>& B)
-{
-    return(AbinSimilares_rec(A.raiz(), A, B.raiz(), B));
-}
+{ return(AbinSimilares_rec(A.raiz(), A, B.raiz(), B)); }
 
 bool AbinSimilares_rec(const typename AbinEnla<tElto>::nodo& nA, const AbinEnla<tElto>& A, const typename AbinEnla<tElto>::nodo& nB, const AbinEnla<tElto>& B)
 {
-    // AMBOS IGUALES Y NULOS
-    if (A.hijoIzqdo(nA) == AbinEnla<tElto>::NODO_NULO && B.hijoIzqdo(nB) == AbinEnla<tElto>::NODO_NULO &&
-    A.hijoDrcho(nA) == AbinEnla<tElto>::NODO_NULO && B.hijoDrcho(nB) == AbinEnla<tElto>::NODO_NULO)
-        return true;
-
-    // ALGUNO DISTINTO
-    else if ((A.hijoIzqdo(nA) == AbinEnla<tElto>::NODO_NULO && B.hijoIzqdo(nB) != AbinEnla<tElto>::NODO_NULO) ||
-    (A.hijoIzqdo(nA) != AbinEnla<tElto>::NODO_NULO && B.hijoIzqdo(nB) == AbinEnla<tElto>::NODO_NULO) ||
-    (A.hijoDrcho(nA) == AbinEnla<tElto>::NODO_NULO && B.hijoDrcho(nB) != AbinEnla<tElto>::NODO_NULO) ||
-    (A.hijoIzqdo(nA) != AbinEnla<tElto>::NODO_NULO && B.hijoIzqdo(nB) == AbinEnla<tElto>::NODO_NULO))
+    if (numHijosNodo(nA, A) == numHijosNodo(nB, B)) {
+        if (numHijosNodo(nA, A) == 0)
+            return true;
+        else if (numHijosNodo(nA, A) == 2)
+            return(AbinSimilares_rec(A.hijoIzqdo(nA),A,A.hijoIzqdo(nB),B) && AbinSimilares_rec(A.hijoDrcho(nA),A,A.hijoDrcho(nB),B));
+        else {
+            if (A.hijoIzqdo(nA) != AbinEnla<tElto>::NODO_NULO && B.hijoIzqdo(nB) != AbinEnla<tElto>::NODO_NULO)
+                return(AbinSimilares_rec(A.hijoIzqdo(nA),A,A.hijoIzqdo(nB),B));
+            else if (A.hijoDrcho(nA) != AbinEnla<tElto>::NODO_NULO && B.hijoDrcho(nB) != AbinEnla<tElto>::NODO_NULO)
+                return(AbinSimilares_rec(A.hijoDrcho(nA),A,A.hijoDrcho(nB),B));
+            else
+                return false;
+        }
+    }
+    else
         return false;
-    
-    // AMBOS IGUALES IZQ NO NULO / DER NULO
-    else if (A.hijoIzqdo(nA) != AbinEnla<tElto>::NODO_NULO && B.hijoIzqdo(nB) != AbinEnla<tElto>::NODO_NULO &&
-    A.hijoDrcho(nA) == AbinEnla<tElto>::NODO_NULO && B.hijoDrcho(nB) == AbinEnla<tElto>::NODO_NULO)
-        return(AbinSimilares_rec(A.hijoIzqdo(nA),A,A.hijoIzqdo(nB),B));
-
-    // AMBOS IGUALES IZQ NULO / DER NO NULO
-    else if (A.hijoIzqdo(nA) == AbinEnla<tElto>::NODO_NULO && B.hijoIzqdo(nB) == AbinEnla<tElto>::NODO_NULO &&
-    A.hijoDrcho(nA) != AbinEnla<tElto>::NODO_NULO && B.hijoDrcho(nB) != AbinEnla<tElto>::NODO_NULO)
-        return(AbinSimilares_rec(A.hijoDrcho(nA),A,A.hijoDrcho(nB),B));
-    
-    // AMBOS IGUALES NO NULOS    
-    else 
-        return(AbinSimilares_rec(A.hijoIzqdo(nA),A,A.hijoIzqdo(nB),B) && AbinSimilares_rec(A.hijoDrcho(nA),A,A.hijoDrcho(nB),B));
-
 }
+
+int numHijosNodo(const typename AbinEnla<tElto>::nodo& n, const AbinEnla<tElto>& A)
+{ return ((A.hijoIzqdo(n) != AbinEnla<tElto>::NODO_NULO) + (A.hijoDrcho(n) != AbinEnla<tElto>::NODO_NULO)); }
 
 // EJERCICIO 2
 AbinEnla<tElto> AbinReflejado(const AbinEnla<tElto>& A)
 {
     AbinEnla<tElto> Reflejado (A);
-
-    AbinReflejado_rec(Reflejado.raiz(), Reflejado);
+    if (!A.arbolVacio())
+        AbinReflejado_rec(Reflejado.raiz(), Reflejado);
 
     return Reflejado;
 }
@@ -110,4 +102,32 @@ const AbinEnla<tElto>& AbinReflejado_rec(const typename AbinEnla<tElto>::nodo& n
     }
 
     return A;
+}
+
+// EJERCICIO 3
+typedef struct
+{
+    double operando;
+    char operador;
+} expresion;
+
+double expresionAbin(const AbinEnla<expresion>& A)
+{
+    return expresionAbin_rec(A.raiz(), A);
+}
+
+double expresionAbin_rec(const typename AbinEnla<expresion>::nodo& n, const AbinEnla<expresion>& A)
+{
+    if (A.hijoIzqdo(n) == AbinEnla<expresion>::NODO_NULO)
+        return A.elemento(n).operando;
+    else {
+        switch (A.elemento(n).operador)
+        {
+            case '+': return expresionAbin_rec(A.hijoIzqdo(n), A) + expresionAbin_rec(A.hijoDrcho(n), A); break;
+            case '-': return expresionAbin_rec(A.hijoIzqdo(n), A) - expresionAbin_rec(A.hijoDrcho(n), A); break;
+            case '*': return expresionAbin_rec(A.hijoIzqdo(n), A) * expresionAbin_rec(A.hijoDrcho(n), A); break;
+            case '/': return expresionAbin_rec(A.hijoIzqdo(n), A) / expresionAbin_rec(A.hijoDrcho(n), A); break;
+            default: assert(false);
+        }
+    }
 }

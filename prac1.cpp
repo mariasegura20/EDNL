@@ -19,7 +19,7 @@ int numNodosAbin_rec(const typename AbinEnla<tElto>::nodo& n, const AbinEnla<tEl
 
 // Ejercicio 2
 int alturaAbin(const AbinEnla<tElto>& A);
-int alturaAbin_rec(const typename AbinEnla<tElto>::nodo& n, const AbinEnla<tElto>& A);
+int alturaNodoAbin(const typename AbinEnla<tElto>::nodo& n, const AbinEnla<tElto>& A);
 
 // Ejercicio 3
 int profundidadNodoAbin_rec(const typename AbinEnla<tElto>::nodo& n, const AbinEnla<tElto>& A);
@@ -33,19 +33,27 @@ int desequilibrioNodoAbin(const typename::AbinEnla<tElto>::nodo& n, const AbinEn
 // Ejercicio 7
 bool pseudocompletoAbin(const AbinEnla<tElto>& A);
 bool pseudocompletoAbin_rec(const typename AbinEnla<tElto>::nodo& n, const AbinEnla<tElto>& A, int nivelProfundidad);
-
+int numHijosNodo(const typename AbinEnla<tElto>::nodo& n, const AbinEnla<tElto>& A);
 
 int main () 
 { 
-    AbinEnla<tElto> A;
+    AbinEnla<tElto> A, V;
 
-    // Lectura del árbol desde el fichero abin.dat y asignación al nodo n de un nodo cualquiera
-    ifstream fe("abin.dat");
+    // Lectura de los árboles y asignación de un nodo cualquiera
+    ifstream fe("abinA.dat");
     rellenarAbin(fe, A);
     fe.close();
     
-    cout << "\n*** Mostrar árbol binario B ***\n"; 
+    cout << "\n*** Mostrar abinA ***\n"; 
     imprimirAbin(A);
+    cout << endl;
+
+    ifstream f3("abinVacio.dat");
+    rellenarAbin(f3, V);
+    f3.close();
+    
+    cout << "\n*** Mostrar abinVacio ***\n"; 
+    imprimirAbin(V);
     cout << endl;
 
     typename AbinEnla<tElto>::nodo n = A.hijoIzqdo(A.raiz());
@@ -83,16 +91,16 @@ int numNodosAbin_rec(const typename AbinEnla<tElto>::nodo& n, const AbinEnla<tEl
 // EJERCICIO 2
 int alturaAbin(const AbinEnla<tElto>& A)
 {
-    return alturaAbin_rec(A.raiz(), A);
+    return alturaNodoAbin(A.raiz(), A);
 }
 
-int alturaAbin_rec(const typename AbinEnla<tElto>::nodo& n, const AbinEnla<tElto>& A)
+int alturaNodoAbin(const typename AbinEnla<tElto>::nodo& n, const AbinEnla<tElto>& A)
 {
     if (n == AbinEnla<tElto>::NODO_NULO)
         // La altura de una hoja es 0 porque la única rama que tiene el nodo es el que va a si mismo, que tiene longitud 0
         return -1;                  // -1 para que la altura de una hoja sea 0. Consecuentemente el arbol vacío tiene una altura 0
     else
-        return 1 + std::max(alturaAbin_rec(A.hijoIzqdo(n), A), alturaAbin_rec(A.hijoDrcho(n), A));
+        return 1 + std::max(alturaNodoAbin(A.hijoIzqdo(n), A), alturaNodoAbin(A.hijoDrcho(n), A));
 }
 
 // EJERCICIO 3
@@ -118,7 +126,7 @@ int profundidadNodoAbin_iter(typename AbinEnla<tElto>::nodo& n, const AbinEnla<t
 }
 
 // EJERCICIO 5
-// Sería meter los ejercicios 2 (función del nodo) y ejercicio 3 en el TAD
+// Sería meter alturaNodoAbin y el ejercicio 3 en el TAD
 
 // EJERCICIO 6
 int desequilibrioAbin(const AbinEnla<tElto>& A)
@@ -136,25 +144,37 @@ int desequilibrioAbin_rec(const typename::AbinEnla<tElto>::nodo& n, const AbinEn
 
 int desequilibrioNodoAbin(const typename::AbinEnla<tElto>::nodo& n, const AbinEnla<tElto>& A)
 {
-    return abs(alturaAbin_rec(A.hijoIzqdo(n), A) - alturaAbin_rec(A.hijoDrcho(n), A));
+    return abs(alturaNodoAbin(A.hijoIzqdo(n), A) - alturaNodoAbin(A.hijoDrcho(n), A));
 }
 
 // EJERCICIO 7
 bool pseudocompletoAbin(const AbinEnla<tElto>& A)
 {
-    int penultimoNivel = alturaAbin(A) - 1;
-
-    return pseudocompletoAbin_rec(A.raiz(), A, penultimoNivel);
+    int h = alturaAbin(A);
+    if (h < 1)
+        return true;
+    else
+        return pseudocompletoAbin_rec(A.raiz(), A, h - 1);
 }
 
 bool pseudocompletoAbin_rec(const typename AbinEnla<tElto>::nodo& n, const AbinEnla<tElto>& A, int nivelProfundidad)
 {
-    if (profundidadNodoAbin_rec(n,A) == nivelProfundidad) {
-        if (A.hijoIzqdo(n) == AbinEnla<tElto>::NODO_NULO || A.hijoDrcho(n) == AbinEnla<tElto>::NODO_NULO)
+    if (profundidadNodoAbin_rec(n, A) == nivelProfundidad) {
+        if (numHijosNodo(n,A) == 1)
             return false;
         else
             return true;
     }
-    else if (profundidadNodoAbin_rec(n,A) < nivelProfundidad)
-        return (pseudocompletoAbin_rec(A.hijoIzqdo(n), A, nivelProfundidad) && pseudocompletoAbin_rec(A.hijoDrcho(n), A, nivelProfundidad));
+    else {
+        if (alturaNodoAbin(A.hijoIzqdo(n), A) > alturaNodoAbin(A.hijoDrcho(n), A)) {
+            return pseudocompletoAbin_rec(A.hijoIzqdo(n), A, nivelProfundidad);
+        }
+        else if (alturaNodoAbin(A.hijoIzqdo(n), A) < alturaNodoAbin(A.hijoDrcho(n), A))
+            return pseudocompletoAbin_rec(A.hijoDrcho(n), A, nivelProfundidad);
+        else
+            return pseudocompletoAbin_rec(A.hijoIzqdo(n), A, nivelProfundidad) && pseudocompletoAbin_rec(A.hijoDrcho(n), A, nivelProfundidad);
+    }
 }
+
+int numHijosNodo(const typename AbinEnla<tElto>::nodo& n, const AbinEnla<tElto>& A)
+{ return ((A.hijoIzqdo(n) != AbinEnla<tElto>::NODO_NULO) + (A.hijoDrcho(n) != AbinEnla<tElto>::NODO_NULO)); }
