@@ -1,0 +1,33 @@
+TAD GRAFO
+* No ponderado
+    - Mediante Matriz de adyacencia -> grafoMA.hpp
+    - Mediante Listas de adyacencia -> grafoLA.hpp
+* Ponderado
+    - Mediante Matriz de costes -> grafoPMC.hpp
+    - Mediante Listas de adyacencia -> grafoPLA.hpp
+
+ALGORITMOS
+* Grafos no ponderados mediante Matriz de adyacencia -> alg_grafoMA.hpp
+    - Profundidad
+    - Anchura
+    - Warshall
+
+* Grafos ponderados mediante matriz de costes -> alg_grafoPMC.hpp
+    - Dijkstra y Floyd + caminos de ambos
+    - Prim y Kruskal
+
+* Sobrecarga de operadores de inserción de flujo -> alg_grafo_E-S.hpp
+
+
+---------------------------------------------------------------------------------------------
+
+
+const size_t n = G.numVert()
+const tCoste INFINITO = GrafoP<tCoste>::INFINITO;
+typedef typename GrafoP<tCoste>::vertice vertice;
+
+
+---------------------------------------------------------------------------------------------
+
+Iteradores de vectores -> size_t
+Iteradores de grafos -> vertice
