@@ -2,7 +2,6 @@
 #include "algoritmos/alg_grafo_E-S.h"
 
 #include <iostream>
-#include <vector>
 #include <cmath>
 
 using namespace std;
@@ -13,6 +12,32 @@ struct viaje {
     typename GrafoP<tCoste>::vertice origen, destino;
     tCoste coste;
 };
+
+template <typename tCoste>
+matriz<tCoste> FloydMax(const GrafoP<tCoste>& G, matriz<typename GrafoP<tCoste>::vertice>& P)
+{
+    typedef typename GrafoP<tCoste>::vertice vertice;
+    const size_t n = G.numVert();
+    matriz<tCoste> A(n);
+
+    P = matriz<vertice>(n);
+    for (vertice i = 0; i < n; i++) {
+        A[i] = G[i];
+        A[i][i] = 0;
+        P[i] = vector<vertice>(n, i);
+    }
+
+    for (vertice k = 0; k < n; k++)
+        for (vertice i = 0; i < n; i++)
+            for (vertice j = 0; j < n; j++) {
+                tCoste ikj = suma(A[i][k], A[k][j]);
+                if (ikj > A[i][j] && ikj != GrafoP<tCoste>::INFINITO) {
+                    A[i][j] = ikj;
+                    P[i][j] = k;
+                }
+            }
+    return A;
+}
 
 template <typename tCoste>
 viaje<tCoste> viajeMasCaro (const GrafoP<tCoste>& G)
@@ -207,12 +232,6 @@ GrafoP<tCoste> grafoMinimo (const GrafoP<tCoste>& G1, const GrafoP<tCoste>& G2)
     typedef typename GrafoP<tCoste>::vertice vertice;
     const size_t n = G1.numVert();
 
-    matriz<tCoste> f1(n), f2(n);
-    matriz<vertice> P(n);
-
-    f1 = Floyd(G1, P);
-    f2 = Floyd(G2, P);
-
     GrafoP<tCoste> G(n);
 
     for (vertice i = 0 ; i < n ; i++)
@@ -240,7 +259,6 @@ Lista<typename GrafoP<tCoste>::vertice> viajeroAlergico (const GrafoP<tCoste>& c
 
     vector<vertice> P(n);
     vector<tCoste> d(n);
-
     d = Dijkstra(G, origen, P);
 
     Lista<vertice> ciudades;
