@@ -2,7 +2,6 @@
 #include "algoritmos/alg_grafo_E-S.h"
 
 #include <iostream>
-#include <vector>
 
 using namespace std;
 

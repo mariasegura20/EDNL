@@ -508,7 +508,7 @@ struct puente {
 };
 
 template <typename tCoste>
-GrafoP<tCoste> Huries (const GrafoP<tCoste>& isla1, const GrafoP<tCoste>& isla2, const GrafoP<tCoste>& isla3, Lista<puente<tCoste>> puentes)
+GrafoP<tCoste> Huries (const GrafoP<tCoste>& isla1, const GrafoP<tCoste>& isla2, const GrafoP<tCoste>& isla3, vector<puente<tCoste>> puentes)
 {
     typedef typename GrafoP<tCoste>::vertice vertice;
     const size_t n1 = isla1.numVert();
@@ -533,8 +533,8 @@ GrafoP<tCoste> Huries (const GrafoP<tCoste>& isla1, const GrafoP<tCoste>& isla2,
             G[i][j] = isla3[i-n1-n2][j-n1-n2];
 
     // Puentes
-    for (typename Lista<puente<tCoste>>::posicion p = puentes.primera() ; p != puentes.fin() ; p = puentes.siguiente(p))
-        G[puentes.elemento(p).ciudad1][puentes.elemento(p).ciudad2] = 0;
+    for (size_t i = 0 ; i < puentes.size() ; i++)
+        G[puentes[i].ciudad1][puentes[i].ciudad2] = 0;
     
     // Calcular costes mínimos
     matriz<tCoste> f(n1+n2+n3);
@@ -563,7 +563,7 @@ tCoste costeTotal (matriz<tCoste> m)
 }
 
 template <typename tCoste>
-puente<tCoste> Grecoland (const GrafoP<tCoste>& Fobos, const GrafoP<tCoste>& Deimos, Lista<typename GrafoP<tCoste>::vertice> cCostFobos, Lista<typename GrafoP<tCoste>::vertice> cCostDeimos)
+puente<tCoste> Grecoland (const GrafoP<tCoste>& Fobos, const GrafoP<tCoste>& Deimos, vector<typename GrafoP<tCoste>::vertice> cCostFobos, vector<typename GrafoP<tCoste>::vertice> cCostDeimos)
 {
     typedef typename GrafoP<tCoste>::vertice vertice;
     const size_t n1 = Fobos.numVert();
@@ -585,13 +585,13 @@ puente<tCoste> Grecoland (const GrafoP<tCoste>& Fobos, const GrafoP<tCoste>& Dei
     tCoste minimo = GrafoP<tCoste>::INFINITO;
     vertice cFobos, cDeimos;
 
-    typedef typename Lista<vertice>::posicion posicion;
-    for (posicion f = cCostFobos.primera() ; f != cCostFobos.fin() ; f = cCostFobos.siguiente(f))
+
+    for (size_t i = 0; i < cCostFobos.size() ; i++)
     {
-        for (posicion d = cCostDeimos.primera() ; d != cCostDeimos.fin() ; d = cCostDeimos.siguiente(d))
+        for (size_t j = 0; j < cCostDeimos.size() ; j++)
         {
-            vertice cFobosAct = cCostFobos.elemento(f);
-            vertice cDeimosAct = cCostDeimos.elemento(d);
+            vertice cFobosAct = cCostFobos[i];
+            vertice cDeimosAct = cCostDeimos[j];
 
             // Crear puente
             G[cFobosAct][cDeimosAct] = 0;
@@ -622,15 +622,14 @@ puente<tCoste> Grecoland (const GrafoP<tCoste>& Fobos, const GrafoP<tCoste>& Dei
 // Ejercicio 13
 // Asumo que al construir un puente es en ambos sentidos
 template <typename tCoste>
-tCoste mejorPuente(GrafoP<tCoste>& G, Lista<typename GrafoP<tCoste>::vertice> costeras1, Lista<typename GrafoP<tCoste>::vertice> costeras2, typename GrafoP<tCoste>::vertice& c1, typename GrafoP<tCoste>::vertice& c2)
+tCoste mejorPuente(GrafoP<tCoste>& G, vector<typename GrafoP<tCoste>::vertice> costeras1, vector<typename GrafoP<tCoste>::vertice> costeras2, typename GrafoP<tCoste>::vertice& c1, typename GrafoP<tCoste>::vertice& c2)
 {
     typedef typename GrafoP<tCoste>::vertice vertice;
-    typedef typename Lista<vertice>::posicion posicion;
 
     tCoste minimo = GrafoP<tCoste>::INFINITO;
-    for (posicion i = costeras1.primera() ; i != costeras1.fin() ; i = costeras1.siguiente(i))
+    for (size_t i = 0 ; i < costeras1.size() ; i++)
     {
-        for (posicion j = costeras2.primera() ; j != costeras2.fin() ; j = costeras2.siguiente(j))
+        for (size_t j = 0 ; j < costeras2.size() ; j++)
         {
             // Simular puente
             G[i][j] = G[j][i] = 0;
@@ -653,7 +652,7 @@ tCoste mejorPuente(GrafoP<tCoste>& G, Lista<typename GrafoP<tCoste>::vertice> co
 }
 
 template <typename tCoste>
-vector<puente<tCoste>> puentesMinimos (const GrafoP<tCoste>& isla1, const GrafoP<tCoste>& isla2, const GrafoP<tCoste>& isla3, Lista<typename GrafoP<tCoste>::vertice> costeras1, Lista<typename GrafoP<tCoste>::vertice> costeras2, Lista<typename GrafoP<tCoste>::vertice> costeras3)
+vector<puente<tCoste>> puentesMinimos (const GrafoP<tCoste>& isla1, const GrafoP<tCoste>& isla2, const GrafoP<tCoste>& isla3, vector<typename GrafoP<tCoste>::vertice> costeras1, vector<typename GrafoP<tCoste>::vertice> costeras2, vector<typename GrafoP<tCoste>::vertice> costeras3)
 {
     typedef typename GrafoP<tCoste>::vertice vertice;
     const size_t n1 = isla1.numVert();
