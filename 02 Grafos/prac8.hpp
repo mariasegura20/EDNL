@@ -11,7 +11,7 @@ using namespace std;
 
 // Ejercicio 1
 struct ciudad {
-    unsigned x, y;
+    double x, y;
 };
 
 pair<Particion, matriz<double>> Tombuctu (const Grafo& G, vector<ciudad> ciudades)
@@ -48,6 +48,35 @@ struct lineaAerea {
     lineaAerea(ciudad x, ciudad y, double d) : c1(x), c2(y), distancia(d) {}
 };
 
+double distEuclidea(ciudad c1, ciudad c2)
+{ return sqrt(pow(c1.x - c2.x, 2) + pow(c1.y - c2.y, 2)); }
+
+size_t ciudad_to_isla(ciudad c, vector<ciudad> ciudades, vector<int> repres, Particion p)
+{
+    // Busco la ciudad
+    bool encontrado = false;
+    size_t iter = 0;
+    while (iter < ciudades.size() && !encontrado)
+    {
+        if(ciudades[iter].x == c.x && ciudades[iter].y == c.y)
+            encontrado = true;
+        else
+            iter++;
+    }
+
+    // Busco representante
+    int rep = p.encontrar(iter);
+    encontrado = false;
+    iter = 0;
+    while(iter < repres.size() && !encontrado)
+    {
+        if(repres[iter] == rep)
+            return iter;
+        else
+            iter++;
+    }
+}
+
 vector<lineaAerea> Tombuctu2 (const Grafo& arch, vector<ciudad> ciudades)
 {
     const size_t nCiudades = arch.numVert();
@@ -65,33 +94,54 @@ vector<lineaAerea> Tombuctu2 (const Grafo& arch, vector<ciudad> ciudades)
             }
 
     // Representantes de cada isla
-    map<int, int> repres;
-    int islas = 0;
-    for (vertice i = 0 ; i < nCiudades ; i++)
-        if (repres.insert(make_pair(p.encontrar(i), islas)).second)
-            islas++;
-
-    // Buscar los vuelos mínimos
-    matriz<lineaAerea> vuelos(nIslas);
-    for(int i = 0; i < nCiudades-1; i++)
+    vector<int> repres(nIslas);
+    int numRepres = 0;
+    for(size_t i = 0 ; i < ciudades.size() && numRepres < nIslas ; i++)
     {
-        for(int j = i+1; j < nCiudades; j++)
+        int repreActual = p.encontrar(i);
+        size_t iter = 0;
+        bool encontrado = false;
+        while (iter < numRepres && !encontrado)
         {
-            int isla1 = repres[p.encontrar(i)];
-            int isla2 = repres[p.encontrar(j)];
-            if(isla1 != isla2){
-                double d = sqrt(pow(ciudades[i].x- ciudades[j].y, 2) + pow(ciudades[j].x - ciudades[j].y, 2));
-                if(d < vuelos[isla1][isla2].distancia)
-                    vuelos[isla1][isla2] = vuelos[isla2][isla1] = lineaAerea(ciudades[i], ciudades[j], d);
-            }
+            if (repres[iter] == repreActual)
+                encontrado = true;
+            else
+                iter++;
+        }
+
+        if (!encontrado)
+        {
+            repres[numRepres] = repreActual;
+            numRepres++;
         }
     }
 
-    // Pasar los vuelos mínimos a un vector
-    vector<lineaAerea>lineas(nIslas * (nIslas - 1) / 2);
-    for(int i = 0 ; i < nIslas-1 ; i++)
-        for(int j = i; j < nIslas; j++)
-            lineas.push_back(vuelos[i][j]);
+    // Insertar todas las lineas aéreas en un APO
+    Apo<lineaAerea> APO(nCiudades * (nCiudades - 1) / 2);
+    
+    for(int i = 0; i < nCiudades-1; i++)
+        for(int j = i+1; j < nCiudades; j++)
+            APO.insertar(lineaAerea(ciudades[i], ciudades[j], distEuclidea(ciudades[i], ciudades[j])));
 
-    return lineas;
+    // Vuelos mínimos
+    matriz<bool> minimos(nIslas);
+    for (size_t i = 0 ; i < nIslas ; i++)
+        for (size_t j = i ; j < nIslas ; j++)
+            minimos[i][j] = minimos[j][i] = false;
+
+    vector<lineaAerea> vuelos(nIslas * (nIslas - 1) / 2);
+    int cont = 0;
+    while(cont < nIslas * (nIslas - 1) / 2)
+    {
+        lineaAerea la = APO.cima();
+        APO.suprimir();
+        size_t isla1 = ciudad_to_isla(la.c1, ciudades, repres, p);
+        size_t isla2 = ciudad_to_isla(la.c2, ciudades, repres, p);
+        if (minimos[isla1][isla2] == false) {
+            minimos[isla1][isla2] = minimos[isla2][isla1] = true;
+            vuelos.push_back(la);
+        }
+    }
+
+    return vuelos;
 }
